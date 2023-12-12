@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=luci-app-xray
-PKG_VERSION:=1.31.0-rabit
+PKG_NAME:=luci-app-jederproxy
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=1
 
 PKG_LICENSE:=MPLv2
@@ -14,13 +14,13 @@ include $(INCLUDE_DIR)/package.mk
 define Package/$(PKG_NAME)
 	SECTION:=Custom
 	CATEGORY:=Extra packages
-	TITLE:=LuCI Support for Xray
-	DEPENDS:=+luci-base +xray-core +dnsmasq +ca-bundle +PACKAGE_firewall4:kmod-nft-tproxy +PACKAGE_firewall4:ucode-mod-resolv +PACKAGE_firewall:ipset +PACKAGE_firewall:iptables +PACKAGE_firewall:iptables-mod-conntrack-extra +PACKAGE_firewall:iptables-mod-extra +PACKAGE_firewall:iptables-mod-tproxy
+	TITLE:=LuCI Support for jeder(every) proxies
+	DEPENDS:=+luci-base +dnsmasq +ca-bundle +PACKAGE_firewall4:kmod-nft-tproxy +PACKAGE_firewall4:ucode-mod-resolv +PACKAGE_firewall:ipset +PACKAGE_firewall:iptables +PACKAGE_firewall:iptables-mod-conntrack-extra +PACKAGE_firewall:iptables-mod-extra +PACKAGE_firewall:iptables-mod-tproxy
 	PKGARCH:=all
 endef
 
 define Package/$(PKG_NAME)/description
-	LuCI Support for Xray (Client-side Rendered).
+	LuCI interface for multiple proxy backends, supporting clash/clash meta, xray/v2ray, shadowsocks (ss-redir).
 endef
 
 define Package/$(PKG_NAME)/config
