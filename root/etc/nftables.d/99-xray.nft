@@ -1,1 +1,1 @@
-include "/var/etc/xray/*.nft"
+include "/var/etc/jederproxy/*.nft"

@@ -24,12 +24,8 @@ define Package/$(PKG_NAME)/description
 endef
 
 define Package/$(PKG_NAME)/config
-menu "luci-app-xray Configuration"
+menu "luci-app-jederproxy Configuration"
 	depends on PACKAGE_$(PKG_NAME)
-
-config PACKAGE_XRAY_INCLUDE_CLOUDFLARE_ORIGIN_ROOT_CA
-	bool "Include Cloudflare Origin Root CA"
-	default n
 
 endmenu
 endef
@@ -38,51 +34,47 @@ define Build/Compile
 endef
 
 define Package/$(PKG_NAME)/conffiles
-/etc/config/xapp
+/etc/config/jederproxy
 endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) $(CURDIR)/root/etc/init.d/xapp $(1)/etc/init.d/xapp
+	$(INSTALL_BIN) $(CURDIR)/root/etc/init.d/jederproxy $(1)/etc/init.d/jederproxy
 	$(INSTALL_DIR) $(1)/etc/config/
-	$(INSTALL_DATA) $(CURDIR)/root/etc/config/xapp $(1)/etc/config/xapp
+	$(INSTALL_DATA) $(CURDIR)/root/etc/config/jederproxy $(1)/etc/config/jederproxy
 
-	$(INSTALL_DIR) $(1)/etc/luci-uploads/xray/
+	$(INSTALL_DIR) $(1)/etc/luci-uploads/jederproxy/
 
-ifdef CONFIG_PACKAGE_XRAY_INCLUDE_CLOUDFLARE_ORIGIN_ROOT_CA
-	$(INSTALL_DIR) $(1)/etc/ssl/certs
-	$(INSTALL_DATA) $(CURDIR)/root/etc/ssl/certs/origin_ca_ecc_root.pem $(1)/etc/ssl/certs/origin_ca_ecc_root.pem
-endif
 	$(INSTALL_DIR) $(1)/www/luci-static/resources/view
-	$(INSTALL_DATA) ./root/www/luci-static/resources/view/xray.js $(1)/www/luci-static/resources/view/xray.js
+	$(INSTALL_DATA) ./root/www/luci-static/resources/view/jederproxy.js $(1)/www/luci-static/resources/view/jederproxy.js
 
 	$(INSTALL_DIR) $(1)/www/luci-static/resources/view/
-	$(INSTALL_DATA) $(CURDIR)/root/www/luci-static/resources/view/xray.js $(1)/www/luci-static/resources/view/xray.js
+	$(INSTALL_DATA) $(CURDIR)/root/www/luci-static/resources/view/jederproxy.js $(1)/www/luci-static/resources/view/jederproxy.js
 	$(INSTALL_DIR) $(1)/usr/share/luci/menu.d/
-	$(INSTALL_DATA) $(CURDIR)/root/usr/share/luci/menu.d/luci-app-xray.json $(1)/usr/share/luci/menu.d/luci-app-xray.json
+	$(INSTALL_DATA) $(CURDIR)/root/usr/share/luci/menu.d/luci-app-jederproxy.json $(1)/usr/share/luci/menu.d/luci-app-jederproxy.json
 
 	$(INSTALL_DIR) $(1)/usr/libexec/rpcd/
-	$(INSTALL_BIN) $(CURDIR)/root/usr/libexec/rpcd/xray $(1)/usr/libexec/rpcd/xray
+	$(INSTALL_BIN) $(CURDIR)/root/usr/libexec/rpcd/jederproxy $(1)/usr/libexec/rpcd/jederproxy
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d/
-	$(INSTALL_DATA) $(CURDIR)/root/usr/share/rpcd/acl.d/luci-app-xray.json $(1)/usr/share/rpcd/acl.d/luci-app-xray.json
+	$(INSTALL_DATA) $(CURDIR)/root/usr/share/rpcd/acl.d/luci-app-jederproxy.json $(1)/usr/share/rpcd/acl.d/luci-app-jederproxy.json
 
-	$(INSTALL_DIR) $(1)/usr/share/xray/
+	$(INSTALL_DIR) $(1)/usr/share/jederproxy/
 	$(INSTALL_DIR) $(1)/lib/functions/
 
 ifdef CONFIG_PACKAGE_firewall
-	$(INSTALL_BIN) $(CURDIR)/root/usr/share/xray/gen_ipset_rules.lua $(1)/usr/share/xray/gen_ipset_rules.lua
-	$(INSTALL_BIN) $(CURDIR)/root/usr/share/xray/gen_ipset_rules_extra_normal.lua $(1)/usr/share/xray/gen_ipset_rules_extra.lua
-	$(INSTALL_BIN) $(CURDIR)/root/usr/share/xray/firewall_include.lua $(1)/usr/share/xray/firewall_include.lua
-	$(INSTALL_BIN) $(CURDIR)/root/usr/share/xray/gen_config.lua $(1)/usr/share/xray/gen_config.lua
-	$(INSTALL_BIN) $(CURDIR)/root/lib/functions/xray.fw3.sh $(1)/lib/functions/xray.sh
+	$(INSTALL_BIN) $(CURDIR)/root/usr/share/jederproxy/gen_ipset_rules.lua $(1)/usr/share/jederproxy/gen_ipset_rules.lua
+	$(INSTALL_BIN) $(CURDIR)/root/usr/share/jederproxy/gen_ipset_rules_extra_normal.lua $(1)/usr/share/jederproxy/gen_ipset_rules_extra.lua
+	$(INSTALL_BIN) $(CURDIR)/root/usr/share/jederproxy/firewall_include.lua $(1)/usr/share/jederproxy/firewall_include.lua
+	$(INSTALL_BIN) $(CURDIR)/root/usr/share/jederproxy/gen_config.lua $(1)/usr/share/jederproxy/gen_config.lua
+	$(INSTALL_BIN) $(CURDIR)/root/lib/functions/jederproxy.fw3.sh $(1)/lib/functions/jederproxy.sh
 endif
 
 ifdef CONFIG_PACKAGE_firewall4
 	$(INSTALL_DIR) $(1)/etc/nftables.d/
-	$(INSTALL_DATA) $(CURDIR)/root/etc/nftables.d/99-xray.nft $(1)/etc/nftables.d/99-xray.nft
-	$(INSTALL_BIN) $(CURDIR)/root/usr/share/xray/firewall_include.ut $(1)/usr/share/xray/firewall_include.ut
-	$(INSTALL_BIN) $(CURDIR)/root/usr/share/xray/gen_config.uc $(1)/usr/share/xray/gen_config.uc
-	$(INSTALL_BIN) $(CURDIR)/root/lib/functions/xray.fw4.sh $(1)/lib/functions/xray.sh
+	$(INSTALL_DATA) $(CURDIR)/root/etc/nftables.d/99-jederproxy.nft $(1)/etc/nftables.d/99-jederproxy.nft
+	$(INSTALL_BIN) $(CURDIR)/root/usr/share/jederproxy/firewall_include.ut $(1)/usr/share/jederproxy/firewall_include.ut
+	$(INSTALL_BIN) $(CURDIR)/root/usr/share/jederproxy/gen_config.uc $(1)/usr/share/jederproxy/gen_config.uc
+	$(INSTALL_BIN) $(CURDIR)/root/lib/functions/jederproxy.fw4.sh $(1)/lib/functions/jederproxy.sh
 endif
 
 endef
@@ -98,12 +90,12 @@ enable_feature_flag() {
 }
 
 if [ -z "$${PKG_INSTROOT}" ]; then
-	sed -i -e '/%FLAG_DELETE%/d' /www/luci-static/resources/view/xray.js
-	if [ -f "/usr/share/xray/gen_config.lua" ]; then
-		enable_feature_flag FW3 /www/luci-static/resources/view/xray.js
+	sed -i -e '/%FLAG_DELETE%/d' /www/luci-static/resources/view/jederproxy.js
+	if [ -f "/usr/share/jederproxy/gen_config.lua" ]; then
+		enable_feature_flag FW3 /www/luci-static/resources/view/jederproxy.js
 	fi
-	if [ -f "/usr/share/xray/gen_config.uc" ]; then
-		enable_feature_flag FW4 /www/luci-static/resources/view/xray.js
+	if [ -f "/usr/share/jederproxy/gen_config.uc" ]; then
+		enable_feature_flag FW4 /www/luci-static/resources/view/jederproxy.js
 	fi
 fi
 

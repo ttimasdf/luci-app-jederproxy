@@ -1,12 +1,12 @@
-FIREWALL_INCLUDE="/usr/share/xray/firewall_include.lua"
+FIREWALL_INCLUDE="/usr/share/jederproxy/firewall_include.lua"
 
 log() {
-    logger -st xapp[$$] -p4 "$@"
+    logger -st jederproxy[$$] -p4 "$@"
 }
 
 setup_firewall() {
     log "Setting ipset rules..."
-    lua /usr/share/xray/gen_ipset_rules.lua | ipset -! restore
+    lua /usr/share/jederproxy/gen_ipset_rules.lua | ipset -! restore
 
     log "Generating firewall rules..."
     /usr/bin/lua ${FIREWALL_INCLUDE} enable > $(uci get firewall.xray.path)
@@ -29,5 +29,5 @@ flush_firewall() {
 }
 
 impl_gen_config_file() {
-    /usr/bin/lua /usr/share/xray/gen_config.lua > /var/etc/xray/10-config.json
+    /usr/bin/lua /usr/share/jederproxy/gen_config.lua > /var/etc/jederproxy/10-config.json
 }

@@ -1,8 +1,8 @@
-[![Build Packages](https://github.com/ttimasdf/luci-app-xray/actions/workflows/build.yml/badge.svg?branch=custom)](https://github.com/ttimasdf/luci-app-xray/actions/workflows/build.yml)
+[![Build Packages](https://github.com/ttimasdf/luci-app-jederproxy/actions/workflows/build.yml/badge.svg?branch=custom)](https://github.com/ttimasdf/luci-app-jederproxy/actions/workflows/build.yml)
 
-# luci-app-xray
+# luci-app-jederproxy
 
-Yet Another LuCI frontend for Xray. An *opinionated* forked version of [yichya/luci-app-xray](https://github.com/yichya/luci-app-xray) with lots of quality of life improvements.
+Yet Another LuCI frontend for Xray. An *opinionated* forked version of [yichya/luci-app-jederproxy](https://github.com/yichya/luci-app-jederproxy) with lots of quality of life improvements.
 
 This project will *never* provide updates through an opkg feed. It's easy though, but adding a custom feed from untrusted source (anywhere, even me!) is a huge security flaw. Manual installation with `opkg` or pack the ipk into the firmware image with OpenWrt imagebuilder is recommanded.
 
@@ -30,11 +30,11 @@ This project will *never* provide updates through an opkg feed. It's easy though
 
 ## Breaking changes differ from upstream project
 
-Service name is changed from `xray` to `xapp`, to avoid conflict with service provided by openwrt package `xray-core`.
+Service name is changed from `xray` to `jederproxy`, to avoid conflict with service provided by openwrt package `xray-core`.
 
 ```bash
 # start service
-/etc/init.d/xapp start
+/etc/init.d/jederproxy start
 # stop service
-/etc/init.d/xapp stop
+/etc/init.d/jederproxy stop
 ```

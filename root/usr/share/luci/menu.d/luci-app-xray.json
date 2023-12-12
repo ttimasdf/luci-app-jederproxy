@@ -1,5 +1,5 @@
 {
-    "admin/services/xray": {
+    "admin/services/jederproxy": {
         "title": "Xray",
         "action": {
             "type": "view",
@@ -7,10 +7,10 @@
         },
         "depends": {
             "acl": [
-                "luci-app-xray"
+                "luci-app-jederproxy"
             ],
             "uci": {
-                "xapp": true
+                "jederproxy": true
             }
         }
     }

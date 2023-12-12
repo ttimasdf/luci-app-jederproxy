@@ -21,7 +21,7 @@ end
 local geoip_existence = false
 local geosite_existence = false
 
-local xray_data_file_iterator = nixiofs.dir("/usr/share/xray")
+local xray_data_file_iterator = nixiofs.dir("/usr/share/jederproxy")
 
 repeat
     local fn = xray_data_file_iterator()

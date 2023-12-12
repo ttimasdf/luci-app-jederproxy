@@ -1,5 +1,5 @@
 config general
-	option xray_bin '/usr/bin/xray'
+	option xray_bin '/usr/bin/jederproxy'
 	option mark '255'
 	option tproxy_port_tcp '1080'
 	option tproxy_port_udp '1081'

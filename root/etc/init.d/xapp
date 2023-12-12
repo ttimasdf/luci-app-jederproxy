@@ -3,9 +3,9 @@
 START=90
 STOP=15
 USE_PROCD=1
-NAME=xapp
+NAME=jederproxy
 
-. $IPKG_INSTROOT/lib/functions/xray.sh
+. $IPKG_INSTROOT/lib/functions/jederproxy.sh
 
 uci_get_by_type() {
     local ret=$(uci get ${NAME}.@$1[0].$2 2> /dev/null)
@@ -25,7 +25,7 @@ start_xray() {
     procd_set_param command $1
     procd_append_param command run
     procd_append_param command -confdir
-    procd_append_param command /var/etc/xray
+    procd_append_param command /var/etc/jederproxy
 
     local rlimit_nofile
     local rlimit_data
@@ -41,42 +41,42 @@ start_xray() {
         procd_set_param limits "data=${rlimit_data}"
     fi
 
-    procd_set_param env XRAY_LOCATION_ASSET=/usr/share/xray
+    procd_set_param env XRAY_LOCATION_ASSET=/usr/share/jederproxy
     procd_set_param stdout 1
     procd_set_param stderr 1
-    procd_set_param file /etc/config/xray
-    procd_set_param pidfile /var/run/xray.pid
+    procd_set_param file /etc/config/jederproxy
+    procd_set_param pidfile /var/run/jederproxy.pid
     procd_close_instance
 }
 
 gen_config_file() {
-    rm -f /var/etc/xray/*
+    rm -f /var/etc/jederproxy/*
     log "Generating Xray configuration files..."
     impl_gen_config_file
     local custom_config=$(uci_get_by_type general custom_config)
-    [ ! "${#custom_config}" == "0" ] && echo ${custom_config} > /var/etc/xray/11-xapp-custom.json
+    [ ! "${#custom_config}" == "0" ] && echo ${custom_config} > /var/etc/jederproxy/11-jederproxy-custom.json
     local custom_config_dir=$(uci_get_by_type general custom_config_dir)
-    [ -n "$custom_config_dir" -a -n "$(ls -A $custom_config_dir)" ] && cp "$custom_config_dir"/*.json /var/etc/xray/
+    [ -n "$custom_config_dir" -a -n "$(ls -A $custom_config_dir)" ] && cp "$custom_config_dir"/*.json /var/etc/jederproxy/
 }
 
 setup_dnsmasq() {
     local dns_port=$(uci_get_by_type general dns_port)
     local dns_count=$(uci_get_by_type general dns_count 0)
 
-    echo "# Generated dnsmasq configurations by luci-app-xray" > /tmp/dnsmasq.d/xray.conf
-    echo "strict-order" >> /tmp/dnsmasq.d/xray.conf
-    echo "server=/#/127.0.0.1#${dns_port}" >> /tmp/dnsmasq.d/xray.conf
+    echo "# Generated dnsmasq configurations by luci-app-jederproxy" > /tmp/dnsmasq.d/jederproxy.conf
+    echo "strict-order" >> /tmp/dnsmasq.d/jederproxy.conf
+    echo "server=/#/127.0.0.1#${dns_port}" >> /tmp/dnsmasq.d/jederproxy.conf
     local cur_port
     for cur_port in $(seq ${dns_port} $(expr ${dns_port} + ${dns_count})); do
-        echo "server=127.0.0.1#${cur_port}" >> /tmp/dnsmasq.d/xray.conf
+        echo "server=127.0.0.1#${cur_port}" >> /tmp/dnsmasq.d/jederproxy.conf
     done
 
-    log $(cat /tmp/dnsmasq.d/xray.conf)
+    log $(cat /tmp/dnsmasq.d/jederproxy.conf)
     /etc/init.d/dnsmasq restart > /dev/null 2>&1
 }
 
 flush_dnsmasq() {
-    [ -f "/tmp/dnsmasq.d/xray.conf" ] && rm /tmp/dnsmasq.d/xray.conf
+    [ -f "/tmp/dnsmasq.d/jederproxy.conf" ] && rm /tmp/dnsmasq.d/jederproxy.conf
     /etc/init.d/dnsmasq restart > /dev/null 2>&1
 }
 
@@ -95,7 +95,7 @@ flush_when_disable() {
 
 start_service() {
     config_load $NAME
-    mkdir -p /var/run /var/etc/xray
+    mkdir -p /var/run /var/etc/jederproxy
     local xray_bin=$(uci_get_by_type general xray_bin)
     command -v ${xray_bin} > /dev/null 2>&1 || return 1
     gen_config_file

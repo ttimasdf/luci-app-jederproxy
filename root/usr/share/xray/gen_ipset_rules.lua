@@ -2,9 +2,9 @@
 
 local io = require("io")
 local ucursor = require "luci.model.uci"
-local proxy_section = ucursor:get_first("xapp", "general")
-local proxy = ucursor:get_all("xapp", proxy_section)
-local gen_ipset_rules_extra = dofile("/usr/share/xray/gen_ipset_rules_extra.lua")
+local proxy_section = ucursor:get_first("jederproxy", "general")
+local proxy = ucursor:get_all("jederproxy", proxy_section)
+local gen_ipset_rules_extra = dofile("/usr/share/jederproxy/gen_ipset_rules_extra.lua")
 
 local create_ipset_rules = [[create tp_spec_src_bp hash:mac hashsize 64
 create tp_spec_src_fw hash:mac hashsize 64

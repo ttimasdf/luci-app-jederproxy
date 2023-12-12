@@ -262,7 +262,7 @@ ServiceController = form.DummyValue.extend({
 
 return view.extend({
     handleServiceReload: function (ev) {
-        return callInitAction("xapp", "restart").then(function(rc) {
+        return callInitAction("jederproxy", "restart").then(function(rc) {
             ui.addNotification(null, E('p', _('Reload service success.')), 'info');
         }).catch(function (e) {
             ui.addNotification(null, E("p", _('Unable to reload service: %s').format(e.message)), "error");
@@ -275,11 +275,11 @@ return view.extend({
 
     load: function () {
         return Promise.all([
-            uci.load("xapp"),
-            fs.list("/usr/share/xray"),
+            uci.load("jederproxy"),
+            fs.list("/usr/share/jederproxy"),
             network.getHostHints(),
-            L.resolveDefault(fs.read("/var/run/xray.pid"), null),
-            callInitList("xapp"),
+            L.resolveDefault(fs.read("/var/run/jederproxy.pid"), null),
+            callInitList("jederproxy"),
         ])
     },
 
@@ -288,19 +288,19 @@ return view.extend({
         const xray_dir = load_result[1];
         const network_hosts = load_result[2];
         const xray_pid = load_result[3];
-        const xray_service_status = load_result[4]["xapp"];
+        const xray_service_status = load_result[4]["jederproxy"];
         const geoip_direct_code = uci.get_first(config_data, "general", "geoip_direct_code");
         const { geoip_existence, geoip_size, geosite_existence, geosite_size, optional_features, firewall4, xray_bin_default } = check_resource_files(xray_dir);
         const status_text = xray_pid ? (_("[Xray is running]") + `[PID:${xray_pid.trim()}]`) : _("[Xray is stopped]");
 
-        let asset_file_status = _('WARNING: at least one of asset files (geoip.dat, geosite.dat) is not found under /usr/share/xray. Xray may not work properly. See <a href="https://github.com/ttimasdf/luci-app-xray">here</a> for help.')
+        let asset_file_status = _('WARNING: at least one of asset files (geoip.dat, geosite.dat) is not found under /usr/share/jederproxy. Xray may not work properly. See <a href="https://github.com/ttimasdf/luci-app-jederproxy">here</a> for help.')
         if (geoip_existence) {
             if (geosite_existence) {
-                asset_file_status = _('Asset files check: ') + `geoip.dat ${geoip_size}; geosite.dat ${geosite_size}. ` + _('Report issues or request for features <a href="https://github.com/ttimasdf/luci-app-xray">here</a>.')
+                asset_file_status = _('Asset files check: ') + `geoip.dat ${geoip_size}; geosite.dat ${geosite_size}. ` + _('Report issues or request for features <a href="https://github.com/ttimasdf/luci-app-jederproxy">here</a>.')
             }
         }
 
-        const m = new form.Map('xapp', _('Xray'), status_text + " " + asset_file_status);
+        const m = new form.Map('jederproxy', _('Xray'), status_text + " " + asset_file_status);
 
         var s, o, ss;
 
@@ -313,11 +313,11 @@ return view.extend({
         o = s.taboption('general', form.Value, 'xray_bin', _('Xray Executable Path'))
         o.rmempty = false
         if (xray_bin_default) {
-            o.value("/usr/bin/xray", _("/usr/bin/xray (default, exist)"))
+            o.value("/usr/bin/jederproxy", _("/usr/bin/jederproxy (default, exist)"))
         }
 
         o = s.taboption('general', ServiceController, "_service", _("Service Control"), _("Refresh the page manually for actions to take effect"));
-        o.service_name = "xapp"
+        o.service_name = "jederproxy"
         o.service_enabled = xray_service_status.enabled;
         o.service_index = xray_service_status.index;
 
@@ -342,7 +342,7 @@ return view.extend({
         o = s.taboption('general', form.Flag, 'tproxy_sniffing', _('Enable Sniffing'), _('If sniffing is enabled, requests will be routed according to domain settings in "DNS Settings" tab.'))
         o.depends("transparent_proxy_enable", "1")
 
-        o = s.taboption('general', form.Flag, 'route_only', _('Route Only'), _('Use sniffed domain for routing only but still access through IP. Reduces unnecessary DNS requests. See <a href="https://github.com/XTLS/Xray-core/commit/a3023e43ef55d4498b1afbc9a7fe7b385138bb1a">here</a> for help.'))
+        o = s.taboption('general', form.Flag, 'route_only', _('Route Only'), _('Use sniffed domain for routing only but still access through IP. Reduces unnecessary DNS requests. See <a href="https://github.com/XTLS/jederproxy-core/commit/a3023e43ef55d4498b1afbc9a7fe7b385138bb1a">here</a> for help.'))
         o.depends({ "transparent_proxy_enable": "1", "tproxy_sniffing": "1" })
 
         o = s.taboption('general', form.SectionValue, "xray_servers", form.GridSection, 'servers', _('Xray Servers'), _("Servers are referenced by index (order in the following list). Deleting servers may result in changes of upstream servers actually used by proxy and bridge."))
@@ -370,7 +370,7 @@ return view.extend({
         o.datatype = 'port'
         o.placeholder = '443'
 
-        o = ss.taboption('general', form.Value, 'password', _('UserId / Password'), _('Fill user_id for vmess / VLESS, or password for shadowsocks / trojan (also supports <a href="https://github.com/XTLS/Xray-core/issues/158">Xray UUID Mapping</a>)'))
+        o = ss.taboption('general', form.Value, 'password', _('UserId / Password'), _('Fill user_id for vmess / VLESS, or password for shadowsocks / trojan (also supports <a href="https://github.com/XTLS/jederproxy-core/issues/158">Xray UUID Mapping</a>)'))
         o.modalonly = true
 
         ss.tab('protocol', _('Protocol Settings'));
@@ -677,7 +677,7 @@ return view.extend({
         if (geosite_existence) {
             o = s.taboption('dns', form.DynamicList, "bypassed_domain_rules", _('Bypassed domain rules'), _('Specify rules like <code>geosite:cn</code> or <code>domain:bilibili.com</code>. See <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.'))
         } else {
-            o = s.taboption('dns', form.DynamicList, 'bypassed_domain_rules', _('Bypassed domain rules'), _('Specify rules like <code>domain:bilibili.com</code> or see <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.<br/> In order to use Geosite rules you need a valid resource file /usr/share/xray/geosite.dat.<br/>Compile your firmware again with data files to use Geosite rules, or <a href="https://github.com/v2fly/domain-list-community">download one</a> and upload it to your router.'))
+            o = s.taboption('dns', form.DynamicList, 'bypassed_domain_rules', _('Bypassed domain rules'), _('Specify rules like <code>domain:bilibili.com</code> or see <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.<br/> In order to use Geosite rules you need a valid resource file /usr/share/jederproxy/geosite.dat.<br/>Compile your firmware again with data files to use Geosite rules, or <a href="https://github.com/v2fly/domain-list-community">download one</a> and upload it to your router.'))
         }
         o.rmempty = true
 
@@ -688,7 +688,7 @@ return view.extend({
         if (geosite_existence) {
             o = s.taboption('dns', form.DynamicList, "forwarded_domain_rules", _('Forwarded domain rules'), _('Specify rules like <code>geosite:geolocation-!cn</code> or <code>domain:youtube.com</code>. See <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.'))
         } else {
-            o = s.taboption('dns', form.DynamicList, 'forwarded_domain_rules', _('Forwarded domain rules'), _('Specify rules like <code>domain:youtube.com</code> or see <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.<br/> In order to use Geosite rules you need a valid resource file /usr/share/xray/geosite.dat.<br/>Compile your firmware again with data files to use Geosite rules, or <a href="https://github.com/v2fly/domain-list-community">download one</a> and upload it to your router.'))
+            o = s.taboption('dns', form.DynamicList, 'forwarded_domain_rules', _('Forwarded domain rules'), _('Specify rules like <code>domain:youtube.com</code> or see <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.<br/> In order to use Geosite rules you need a valid resource file /usr/share/jederproxy/geosite.dat.<br/>Compile your firmware again with data files to use Geosite rules, or <a href="https://github.com/v2fly/domain-list-community">download one</a> and upload it to your router.'))
         }
         o.rmempty = true
 
@@ -699,7 +699,7 @@ return view.extend({
         if (geosite_existence) {
             o = s.taboption('dns', form.DynamicList, "blocked_domain_rules", _('Blocked domain rules'), _('Specify rules like <code>geosite:category-ads</code> or <code>domain:baidu.com</code>. See <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.'))
         } else {
-            o = s.taboption('dns', form.DynamicList, 'blocked_domain_rules', _('Blocked domain rules'), _('Specify rules like <code>domain:baidu.com</code> or see <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.<br/> In order to use Geosite rules you need a valid resource file /usr/share/xray/geosite.dat.<br/>Compile your firmware again with data files to use Geosite rules, or <a href="https://github.com/v2fly/domain-list-community">download one</a> and upload it to your router.'))
+            o = s.taboption('dns', form.DynamicList, 'blocked_domain_rules', _('Blocked domain rules'), _('Specify rules like <code>domain:baidu.com</code> or see <a href="https://xtls.github.io/config/dns.html#dnsobject">documentation</a> for details.<br/> In order to use Geosite rules you need a valid resource file /usr/share/jederproxy/geosite.dat.<br/>Compile your firmware again with data files to use Geosite rules, or <a href="https://github.com/v2fly/domain-list-community">download one</a> and upload it to your router.'))
         }
         o.rmempty = true
 
@@ -717,14 +717,14 @@ return view.extend({
             if (geoip_existence) {
                 o = s.taboption('transparent_proxy_rules', form.DynamicList, 'geoip_direct_code_list', _('GeoIP Direct Code List'), _("Hosts in these GeoIP sets will not be forwarded through Xray. Remove all items to forward all non-private hosts."))
             } else {
-                o = s.taboption('transparent_proxy_rules', form.DynamicList, 'geoip_direct_code_list', _('GeoIP Direct Code List'), _("Resource file /usr/share/xray/geoip.dat not exist. All network traffic will be forwarded. <br/> Compile your firmware again with data files to use this feature, or<br/><a href=\"https://github.com/v2fly/geoip\">download one</a> (maybe disable transparent proxy first) and upload it to your router."))
+                o = s.taboption('transparent_proxy_rules', form.DynamicList, 'geoip_direct_code_list', _('GeoIP Direct Code List'), _("Resource file /usr/share/jederproxy/geoip.dat not exist. All network traffic will be forwarded. <br/> Compile your firmware again with data files to use this feature, or<br/><a href=\"https://github.com/v2fly/geoip\">download one</a> (maybe disable transparent proxy first) and upload it to your router."))
                 o.readonly = true
             }
         } else {
             if (geoip_existence) {
                 o = s.taboption('transparent_proxy_rules', form.Value, 'geoip_direct_code', _('GeoIP Direct Code'), _("Hosts in this GeoIP set will not be forwarded through Xray. <br/> Switching to new format (by selecting 'Unspecified') is recommended for multiple GeoIP options here, <br/> and is required if you want to forward all non-private hosts. This legacy option will be removed later."))
             } else {
-                o = s.taboption('transparent_proxy_rules', form.Value, 'geoip_direct_code', _('GeoIP Direct Code'), _("Resource file /usr/share/xray/geoip.dat not exist. All network traffic will be forwarded. <br/> Compile your firmware again with data files to use this feature, or<br/><a href=\"https://github.com/v2fly/geoip\">download one</a> (maybe disable transparent proxy first) and upload it to your router."))
+                o = s.taboption('transparent_proxy_rules', form.Value, 'geoip_direct_code', _('GeoIP Direct Code'), _("Resource file /usr/share/jederproxy/geoip.dat not exist. All network traffic will be forwarded. <br/> Compile your firmware again with data files to use this feature, or<br/><a href=\"https://github.com/v2fly/geoip\">download one</a> (maybe disable transparent proxy first) and upload it to your router."))
                 o.readonly = true
             }
         }
@@ -809,11 +809,11 @@ return view.extend({
         o.depends("web_server_enable", "1")
 
         o = s.taboption('xray_server', form.FileUpload, 'web_server_cert_file', _('Certificate File'));
-        o.root_directory = "/etc/luci-uploads/xray"
+        o.root_directory = "/etc/luci-uploads/jederproxy"
         o.depends("web_server_enable", "1")
 
         o = s.taboption('xray_server', form.FileUpload, 'web_server_key_file', _('Private Key File'));
-        o.root_directory = "/etc/luci-uploads/xray"
+        o.root_directory = "/etc/luci-uploads/jederproxy"
         o.depends("web_server_enable", "1")
 
         o = s.taboption('xray_server', form.ListValue, "web_server_protocol", _("Protocol"), _("Only protocols which support fallback are available."));
@@ -826,7 +826,7 @@ return view.extend({
 
         add_flow_and_stream_security_conf(s, "xray_server", "web_server_protocol", "trojan", true, false, false)
 
-        o = s.taboption('xray_server', form.Value, 'web_server_password', _('UserId / Password'), _('Fill user_id for vmess / VLESS, or password for shadowsocks / trojan (also supports <a href="https://github.com/XTLS/Xray-core/issues/158">Xray UUID Mapping</a>)'))
+        o = s.taboption('xray_server', form.Value, 'web_server_password', _('UserId / Password'), _('Fill user_id for vmess / VLESS, or password for shadowsocks / trojan (also supports <a href="https://github.com/XTLS/jederproxy-core/issues/158">Xray UUID Mapping</a>)'))
         o.depends("web_server_enable", "1")
 
         o = s.taboption('xray_server', form.Value, 'web_server_address', _('Default Fallback HTTP Server'), _("Only HTTP/1.1 supported here. For HTTP/2 upstream, use Fallback Servers below"))
@@ -878,7 +878,7 @@ return view.extend({
 
         o = s.taboption('extra_options', form.Flag, 'observatory', _('Enable Observatory'), _('Enable latency measurement for TCP and UDP outbounds. Support for balancers and strategy will be added later.'))
 
-        o = s.taboption('extra_options', form.Flag, 'metrics_server_enable', _('Enable Xray Metrics Server'), _("Enable built-in metrics server for pprof and expvar. See <a href='https://github.com/XTLS/Xray-core/pull/1000'>here</a> for details."));
+        o = s.taboption('extra_options', form.Flag, 'metrics_server_enable', _('Enable Xray Metrics Server'), _("Enable built-in metrics server for pprof and expvar. See <a href='https://github.com/XTLS/jederproxy-core/pull/1000'>here</a> for details."));
 
         o = s.taboption('extra_options', form.Value, 'metrics_server_port', _('Xray Metrics Server Port'), _("Metrics may be sensitive so think twice before setting it as Default Fallback HTTP Server."))
         o.depends("metrics_server_enable", "1")
@@ -960,13 +960,13 @@ return view.extend({
         // }
 
         s.tab('custom_options', _('Custom Options'))
-        o = s.taboption('custom_options', form.TextValue, 'custom_config', _('Custom Configurations'), _('Check <code>/var/etc/xray/config.json</code> for tags of generated inbounds and outbounds. See <a href="https://xtls.github.io/config/features/multiple.html">here</a> for help'))
+        o = s.taboption('custom_options', form.TextValue, 'custom_config', _('Custom Configurations'), _('Check <code>/var/etc/jederproxy/config.json</code> for tags of generated inbounds and outbounds. See <a href="https://xtls.github.io/config/features/multiple.html">here</a> for help'))
         o.monospace = true
         o.rows = 10
 
         o = s.taboption('custom_options', form.Value, 'custom_config_dir', _('Custom Configuration Dir'), _("Directory containing more custom configurations."))
         o.datatype = 'directory'
-        o.placeholder = '/etc/xray/includes'
+        o.placeholder = '/etc/jederproxy/includes'
 
         return m.render();
     }

@@ -24,8 +24,8 @@
     }
 
     const cursor = uci.cursor();
-    cursor.load("xapp");
-    const config = cursor.get_all("xapp");
+    cursor.load("jederproxy");
+    const config = cursor.get_all("jederproxy");
     const general = config[filter(keys(config), k => config[k][".type"] == "general")[0]];
     const tp_spec_src_fw = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "0"), k => config[k].macaddr) || []);
     const tp_spec_src_bp = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "1"), k => config[k].macaddr) || []);

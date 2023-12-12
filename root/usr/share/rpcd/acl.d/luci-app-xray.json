@@ -1,5 +1,5 @@
 {
-    "luci-app-xray": {
+    "luci-app-jederproxy": {
         "description": "Grant access to xray configurations",
         "read": {
             "ubus": {
@@ -9,16 +9,16 @@
                 ]
             },
             "uci": [
-                "xapp"
+                "jederproxy"
             ],
             "file": {
-                "/etc/init.d/xapp": [ "exec" ],
-                "/var/run/xray.pid": [ "read" ]
+                "/etc/init.d/jederproxy": [ "exec" ],
+                "/var/run/jederproxy.pid": [ "read" ]
             }
         },
         "write": {
             "uci": [
-                "xapp"
+                "jederproxy"
             ]
         }
     }

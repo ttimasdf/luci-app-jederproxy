@@ -4,9 +4,9 @@ const fs = require("fs");
 const resolv = require("resolv");
 
 const cursor = uci.cursor();
-cursor.load("xapp");
-const config = cursor.get_all("xapp");
-const share_dir = fs.lsdir("/usr/share/xray");
+cursor.load("jederproxy");
+const config = cursor.get_all("jederproxy");
+const share_dir = fs.lsdir("/usr/share/jederproxy");
 
 const proxy = config[filter(keys(config), k => config[k][".type"] == "general")[0]];
 const tcp_server = config[proxy["main_server"]];
