@@ -200,23 +200,19 @@ return view.extend({
         o.value("mihomo")
         o.value("xray")
         o.default = "mihomo"
-        o.modalonly = true
 
         o = ss.taboption('general', form.ListValue, 'config_type', _('Config file type'))
         o.value("directory")
         o.value("file")
         o.default = "file"
-        o.modalonly = true
 
         o = ss.taboption('general', form.Value, 'config_directory', _('Config directory path'))
         o.depends("config_type", "directory")
         o.rmempty = false
-        o.modalonly = true
 
         o = ss.taboption('general', form.Value, 'config_file', _('Config file path'))
         o.depends("config_type", "file")
         o.rmempty = false
-        o.modalonly = true
 
         s.tab('proxy', _('iptables/nftables Settings'));
 
