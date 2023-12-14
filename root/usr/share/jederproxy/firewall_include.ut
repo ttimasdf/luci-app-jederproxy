@@ -27,34 +27,34 @@
     cursor.load("jederproxy");
     const config = cursor.get_all("jederproxy");
     const general = config[filter(keys(config), k => config[k][".type"] == "general")[0]];
-    const tp_spec_src_fw = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "0"), k => config[k].macaddr) || []);
-    const tp_spec_src_bp = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "1"), k => config[k].macaddr) || []);
-    const uids_direct = uniq(general.uids_direct || []);
-    const gids_direct = uniq(general.gids_direct || []);
-    const wan_bp_ips = general.wan_bp_ips || [];
-    const wan_fw_ips = general.wan_fw_ips || [];
-    iterate_file(general.wan_bp_list || "/dev/null", line => push(wan_bp_ips, line));
-    iterate_file(general.wan_fw_list || "/dev/null", line => push(wan_fw_ips, line));
-    push(wan_bp_ips, split(general.fast_dns, ":")[0]);
-    push(wan_fw_ips, split(general.secure_dns, ":")[0]);
+    const jp_ether_src_forward = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "0"), k => config[k].macaddr) || []);
+    const jp_ether_src_bypass = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "1"), k => config[k].macaddr) || []);
+    const uids_direct = uniq(general.whitelist_process_uids || []);
+    const gids_direct = uniq(general.whitelist_process_gids || []);
+    const wan_bypass_rules = general.wan_bypass_rules || [];
+    const wan_forward_rules = general.wan_forward_rules || [];
+    iterate_file(general.wan_bypass_rule_file || "/dev/null", line => push(wan_bypass_rules, line));
+    iterate_file(general.wan_forward_rule_file || "/dev/null", line => push(wan_forward_rules, line));
+    // push(wan_bypass_rules, split(general.fast_dns, ":")[0]);
+    // push(wan_forward_rules, split(general.secure_dns, ":")[0]);
 %}
-    set tp_spec_src_bp {
+    set jp_ether_src_bypass {
         type ether_addr
         size 65536
-{% if (length(tp_spec_src_bp) > 0): %}
-        elements = { {{ join(", ", tp_spec_src_bp) }} }
+{% if (length(jp_ether_src_bypass) > 0): %}
+        elements = { {{ join(", ", jp_ether_src_bypass) }} }
 {% endif %}
     }
 
-    set tp_spec_src_fw {
+    set jp_ether_src_forward {
         type ether_addr
         size 65536
-{% if (length(tp_spec_src_fw) > 0): %}
-        elements = { {{ join(", ", tp_spec_src_fw) }} }
+{% if (length(jp_ether_src_forward) > 0): %}
+        elements = { {{ join(", ", jp_ether_src_forward) }} }
 {% endif %}
     }
 
-    set tp_spec_dst_sp {
+    set jp_ipv4_rfc1918 {
         type ipv4_addr
         size 65536
         flags interval
@@ -79,23 +79,23 @@
         auto-merge
     }
 
-    set tp_spec_dst_bp {
+    set jp_ipv4_dst_bypass {
         type ipv4_addr
         size 65536
         flags interval
-        elements = { {{ join(", ", wan_bp_ips)}} }
+        elements = { {{ join(", ", wan_bypass_rules)}} }
         auto-merge
     }
 
-    set tp_spec_dst_fw {
+    set jp_ipv4_dst_forward {
         type ipv4_addr
         size 65536
         flags interval
-        elements = { {{ join(", ", wan_fw_ips)}} }
+        elements = { {{ join(", ", wan_forward_rules)}} }
         auto-merge
     }
 
-    chain xray_rules {
+    chain jproxy_rules {
 {% if (length(uids_direct) > 0): %}
         meta skuid { {{ join(", ", uids_direct) }} } return comment "ignore traffic from processes owned by specific UIDs"
 {% endif %}
@@ -103,35 +103,35 @@
         meta skgid { {{ join(", ", gids_direct) }} } return comment "ignore traffic from processes owned by specific GIDs"
 {% endif %}
 
-        mark {{ sprintf("0x%08x", general.mark) }} counter return comment "ignore traffic marked by xray outbound"
+        mark {{ sprintf("0x%08x", general.packet_mark_id) }} counter return comment "ignore outbound connections initiated by jederproxy"
         counter meta mark set ct mark comment "connection-mark -> packet-mark"
         mark 0x2333 counter return comment "ignore established connections"
 
-        ip daddr @tp_spec_dst_sp return comment "ignore traffic sent to reserved (SPecial) IP address/networks"
-        ether saddr @tp_spec_src_bp return comment "ignore traffic (ByPass) from specific sources (by macaddr)"
-        ether saddr @tp_spec_src_fw jump xray_proxy comment "enforce proxy (ForWard) from specific sources (by macaddr)"
-        ip daddr @tp_spec_dst_fw jump xray_proxy comment "enforce proxy (ForWard) to specific IP address/networks"
-        ip daddr @tp_spec_dst_bp return comment "ignore traffic (ByPass) sent to specific IP address/networks"
+        ip daddr @jp_ipv4_rfc1918 return comment "ignore traffic sent to reserved IP address/networks"
+        ether saddr @jp_ether_src_bypass return comment "ignore traffic from specific sources (by macaddr)"
+        ether saddr @jp_ether_src_forward jump jproxy_mark_connection comment "enforce proxy from specific sources (by macaddr)"
+        ip daddr @jp_ipv4_dst_forward jump jproxy_mark_connection comment "enforce proxy to specific IP address/networks"
+        ip daddr @jp_ipv4_dst_bypass return comment "ignore traffic sent to specific IP address/networks"
 
-        jump xray_proxy
+        jump jproxy_mark_connection
     }
 
-    chain xray_proxy {
+    chain jproxy_mark_connection {
         tcp flags & (fin|syn|rst|ack) == syn counter meta mark set 0x2333 comment "mark the first packet of TCP connections"
         ip protocol udp ct state new counter meta mark set 0x2333 comment "mark the first packet of UDP connections"
         counter ct mark set mark comment "packet-mark -> connection-mark"
     }
 
-    chain xray_prerouting {
+    chain jproxy_prerouting {
         type filter hook prerouting priority filter; policy accept;
 
-        iifname "{{ general.lan_ifaces }}" ip protocol {tcp, udp} fib saddr type != local fib daddr type != local counter jump xray_rules comment "proxy TCP/UDP traffic passing through this router (other->other)"
+        iifname "{{ general.lan_interface }}" ip protocol {tcp, udp} fib saddr type != local fib daddr type != local counter jump jproxy_rules comment "proxy TCP/UDP traffic passing through this router (other->other)"
 
-        meta l4proto tcp meta mark 0x2333 tproxy ip to 127.0.0.1:{{ general.tproxy_port_tcp }} counter accept comment "hand over marked TCP packets to xray"
-        meta l4proto udp meta mark 0x2333 tproxy ip to 127.0.0.1:{{ general.tproxy_port_udp }} counter accept comment "hand over marked UDP packets to xray"
+        meta l4proto tcp meta mark 0x2333 tproxy ip to 127.0.0.1:{{ general.tproxy_port }} counter accept comment "send marked TCP packets to jederproxy"
+        meta l4proto udp meta mark 0x2333 tproxy ip to 127.0.0.1:{{ general.tproxy_port }} counter accept comment "send marked UDP packets to jederproxy"
     }
 
-    chain xray_output {
+    chain jproxy_output {
         type route hook output priority filter; policy accept;
-        ip protocol {tcp, udp} fib saddr type local fib daddr type != local counter jump xray_rules comment "Proxy TCP/UDP traffic from router itself"
+        ip protocol {tcp, udp} fib saddr type local fib daddr type != local counter jump jproxy_rules comment "Proxy TCP/UDP traffic from router itself"
     }
