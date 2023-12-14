@@ -11,8 +11,8 @@ setup_firewall() {
     log "Generating firewall4 rules..."
     /usr/bin/utpl ${FIREWALL_INCLUDE} > /var/etc/jederproxy/firewall_include.nft
 
-    log "Triggering firewall4 restart..."
-    /etc/init.d/firewall restart > /dev/null 2>&1
+    log "Triggering firewall4 reload..."
+    /etc/init.d/firewall reload 2>/dev/null
 }
 
 flush_firewall() {
@@ -22,10 +22,6 @@ flush_firewall() {
     log "Flushing firewall4 rules..."
     rm /var/etc/jederproxy/firewall_include.nft 2>/dev/null || log ".. but fw4 rule file not exists"
 
-    log "Triggering firewall4 restart..."
-    /etc/init.d/firewall restart > /dev/null 2>&1
-}
-
-impl_gen_config_file() {
-    /usr/bin/ucode /usr/share/jederproxy/gen_config.uc > /var/etc/jederproxy/10-config.json
+    log "Triggering firewall4 reload..."
+    /etc/init.d/firewall reload 2>/dev/null
 }

@@ -12,7 +12,7 @@ setup_firewall() {
     /usr/bin/lua ${FIREWALL_INCLUDE} enable > $(uci get firewall.xray.path)
 
     log "Triggering firewall restart..."
-    /etc/init.d/firewall reload
+    /etc/init.d/firewall reload 2>/dev/null
 }
 
 flush_firewall() {
@@ -20,14 +20,10 @@ flush_firewall() {
     /usr/bin/lua ${FIREWALL_INCLUDE} flush > $(uci get firewall.xray.path)
 
     log "Triggering firewall restart..."
-    /etc/init.d/firewall reload
+    /etc/init.d/firewall reload 2>/dev/null
 
     log "Flushing ipset rules..."
     for setname in $(ipset -n list | grep "tp_spec"); do
         ipset -! destroy $setname
     done
-}
-
-impl_gen_config_file() {
-    /usr/bin/lua /usr/share/jederproxy/gen_config.lua > /var/etc/jederproxy/10-config.json
 }
