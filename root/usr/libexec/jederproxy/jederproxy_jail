@@ -1,0 +1,3 @@
+#!/bin/sh
+cd "$JP_TARGET_WD"
+exec "$@"

@@ -16,14 +16,17 @@ uci_get_global_config() {
 
 start_jederproxy_process() {
     process=$1
-    cmd=$2
-    shift 2
+    cwd=$2
+    cmd=$3
+    shift 3
 
-    log "Starting $process from $cmd"
+    log "Starting $process from $cmd inside $cwd"
     procd_open_instance
     procd_set_param respawn 1 1 0
 
-    procd_set_param command "$cmd"
+    procd_set_param env JP_TARGET_WD="$cwd"
+    procd_set_param command "/usr/libexec/jederproxy/jederproxy_jail"
+    procd_append_param command "$cmd"
     for arg in "$@"; do
         procd_append_param command "$arg"
     done
@@ -97,17 +100,24 @@ start_service() {
     config_get config_directory "$active_server" config_directory
     config_get config_file "$active_server" config_file
 
+    local working_directory=""
+    if [ "$config_type" = "directory" ]; then
+        working_directory="$config_directory"
+    elif [ "$config_type" = "file" ]; then
+        working_directory=$(dirname "$config_file")
+    fi
+
     if [ "$server_type" = "mihomo" ]; then
         if [ "$config_type" = "directory" ]; then
-        start_jederproxy_process mihomo "$executable_path" -d "$config_directory"
+        start_jederproxy_process mihomo "$working_directory" "$executable_path" -d "$config_directory"
         elif [ "$config_type" = "file" ]; then
-        start_jederproxy_process mihomo "$executable_path" -f "$config_file"
+        start_jederproxy_process mihomo "$working_directory" "$executable_path" -f "$config_file"
         fi
     elif [ "$server_type" = "xray" ]; then
         if [ "$config_type" = "directory" ]; then
-        start_jederproxy_process xray "$executable_path" -confdir "$config_directory"
+        start_jederproxy_process xray "$working_directory" "$executable_path" -confdir "$config_directory"
         elif [ "$config_type" = "file" ]; then
-        start_jederproxy_process xray "$executable_path" run -c "$config_file"
+        start_jederproxy_process xray "$working_directory" "$executable_path" run -c "$config_file"
         fi
 
     fi

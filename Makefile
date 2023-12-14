@@ -53,6 +53,8 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/share/luci/menu.d/
 	$(INSTALL_DATA) $(CURDIR)/root/usr/share/luci/menu.d/luci-app-jederproxy.json $(1)/usr/share/luci/menu.d/luci-app-jederproxy.json
 
+	$(INSTALL_DIR) $(1)/usr/libexec/jederproxy/
+	$(INSTALL_BIN) $(CURDIR)/root/usr/libexec/jederproxy/jederproxy_jail $(1)/usr/libexec/jederproxy/jederproxy_jail
 	$(INSTALL_DIR) $(1)/usr/libexec/rpcd/
 	$(INSTALL_BIN) $(CURDIR)/root/usr/libexec/rpcd/jederproxy $(1)/usr/libexec/rpcd/jederproxy
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d/
