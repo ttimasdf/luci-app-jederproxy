@@ -17,6 +17,7 @@ define Package/$(PKG_NAME)
 	TITLE:=LuCI Support for jeder(every) proxies
 	DEPENDS:=+luci-base +dnsmasq +ca-bundle +PACKAGE_firewall4:kmod-nft-tproxy +PACKAGE_firewall4:ucode-mod-resolv +PACKAGE_firewall:ipset +PACKAGE_firewall:iptables +PACKAGE_firewall:iptables-mod-conntrack-extra +PACKAGE_firewall:iptables-mod-extra +PACKAGE_firewall:iptables-mod-tproxy
 	PKGARCH:=all
+	USERID:=jederproxy=346:jederproxy=346
 endef
 
 define Package/$(PKG_NAME)/description
