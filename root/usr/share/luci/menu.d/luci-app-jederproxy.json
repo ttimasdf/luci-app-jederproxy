@@ -1,9 +1,9 @@
 {
     "admin/services/jederproxy": {
-        "title": "Xray",
+        "title": "Jederproxy",
         "action": {
             "type": "view",
-            "path": "xray"
+            "path": "jederproxy"
         },
         "depends": {
             "acl": [

@@ -1,6 +1,6 @@
 {
     "luci-app-jederproxy": {
-        "description": "Grant access to xray configurations",
+        "description": "Grant access to jederproxy configurations",
         "read": {
             "ubus": {
                 "luci": [
