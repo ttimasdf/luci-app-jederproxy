@@ -44,17 +44,28 @@ local rules = [[
 
 ##### OUTPUT #####
 -A OUTPUT -p tcp -m addrtype --src-type LOCAL ! --dst-type LOCAL -j JPROXY_RULES
--A OUTPUT -p udp -m addrtype --src-type LOCAL ! --dst-type LOCAL -j JPROXY_RULES
 
 ##### PREROUTING #####
 # proxy traffic passing through this machine (other->other)
 -A PREROUTING -i %s -p tcp -m addrtype ! --src-type LOCAL ! --dst-type LOCAL -j JPROXY_RULES
--A PREROUTING -i %s -p udp -m addrtype ! --src-type LOCAL ! --dst-type LOCAL -j JPROXY_RULES
 
 # hand over the marked package to TPROXY for processing
 -A PREROUTING -p tcp -m mark --mark 0x2333 -j TPROXY --on-ip 127.0.0.1 --on-port %d
--A PREROUTING -p udp -m mark --mark 0x2333 -j TPROXY --on-ip 127.0.0.1 --on-port %d
+]]
 
+local rules_udp = [[
+##### OUTPUT #####
+-A OUTPUT -p udp -m addrtype --src-type LOCAL ! --dst-type LOCAL -j JPROXY_RULES
+
+##### PREROUTING #####
+# proxy traffic passing through this machine (other->other)
+-A PREROUTING -i %s -p udp -m addrtype ! --src-type LOCAL ! --dst-type LOCAL -j JPROXY_RULES
+
+# hand over the marked package to TPROXY for processing
+-A PREROUTING -p udp -m mark --mark 0x2333 -j TPROXY --on-ip 127.0.0.1 --on-port %d
+]]
+
+local footer = [[
 COMMIT
 EOF]]
 
@@ -70,8 +81,12 @@ end
 if arg[1] == "enable" then
     print(header)
     print(string.format(rules, tonumber(proxy.mark),
-        proxy.lan_interface, proxy.lan_interface,
-        proxy.tproxy_port_tcp, proxy.tproxy_port_udp))
-else
+        proxy.lan_interface, proxy.tproxy_port))
+    if proxy.tproxy_enable_udp ~= "1" then
+        print(string.format(rules_udp
+            proxy.lan_interface, proxy.tproxy_port))
+    end
+    print(footer)
+    else
     print("# arg[1] == " .. arg[1] .. ", not enable")
 end

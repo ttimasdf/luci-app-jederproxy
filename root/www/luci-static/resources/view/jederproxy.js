@@ -177,7 +177,10 @@ return view.extend({
 
         o = s.taboption('general', form.Flag, 'dnsmasq_takeover_enable', _('Enable dnsmasq Takeover'), _('Enable this option force using xray dns inbound port as dnsmasq\'s upstream server.'))
 
-        o = s.taboption('general', form.Flag, 'transparent_proxy_enable', _('Enable Transparent Proxy'), _('This enables DNS query forwarding and TProxy for both TCP and UDP connections.'))
+        o = s.taboption('general', form.Flag, 'transparent_proxy_enable', _('Enable Transparent Proxy'), _('This enables DNS query forwarding and TProxy for both TCP and optionally UDP connections.'))
+
+        o = s.taboption('general', form.Flag, 'tproxy_enable_udp', _('Enable UDP Forward'), _('UDP Forward could be switched off for better compatibility with some service providers'))
+        o.depends("transparent_proxy_enable", "1")
 
         o = s.taboption('general', form.SectionValue, "jederproxy_servers", form.GridSection, 'server', _('Proxy Servers'), _("Servers are referenced by index (order in the following list). Deleting servers may result in changes of upstream servers actually used by proxy and bridge."))
         ss = o.subsection

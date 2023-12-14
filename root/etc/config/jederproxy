@@ -1,5 +1,6 @@
 config general
 	option transparent_proxy_enable '1'
+	option tproxy_enable_udp '1'
 	option server 'clashmeta'
 
 	option tproxy_port '7892'

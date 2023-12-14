@@ -33,6 +33,7 @@
     const gids_direct = uniq(general.whitelist_process_gids || []);
     const wan_bypass_rules = general.wan_bypass_rules || [];
     const wan_forward_rules = general.wan_forward_rules || [];
+    const enable_udp = general.tproxy_enable_udp || "";
     iterate_file(general.wan_bypass_rule_file || "/dev/null", line => push(wan_bypass_rules, line));
     iterate_file(general.wan_forward_rule_file || "/dev/null", line => push(wan_forward_rules, line));
     // push(wan_bypass_rules, split(general.fast_dns, ":")[0]);
@@ -128,10 +129,16 @@
         iifname "{{ general.lan_interface }}" ip protocol {tcp, udp} fib saddr type != local fib daddr type != local counter jump jproxy_rules comment "proxy TCP/UDP traffic passing through this router (other->other)"
 
         meta l4proto tcp meta mark 0x2333 tproxy ip to 127.0.0.1:{{ general.tproxy_port }} counter accept comment "send marked TCP packets to jederproxy"
+{% if (enable_udp == "1"): %}
         meta l4proto udp meta mark 0x2333 tproxy ip to 127.0.0.1:{{ general.tproxy_port }} counter accept comment "send marked UDP packets to jederproxy"
+{% endif %}
+
     }
 
     chain jproxy_output {
         type route hook output priority filter; policy accept;
-        ip protocol {tcp, udp} fib saddr type local fib daddr type != local counter jump jproxy_rules comment "Proxy TCP/UDP traffic from router itself"
+        ip protocol tcp fib saddr type local fib daddr type != local counter jump jproxy_rules comment "Proxy TCP traffic from router itself"
+{% if (enable_udp == "1"): %}
+        ip protocol udp fib saddr type local fib daddr type != local counter jump jproxy_rules comment "Proxy UDP traffic from router itself"
+{% endif %}
     }
