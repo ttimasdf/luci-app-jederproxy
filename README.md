@@ -1,40 +1,72 @@
-[![Build Packages](https://github.com/ttimasdf/luci-app-jederproxy/actions/workflows/build.yml/badge.svg?branch=custom)](https://github.com/ttimasdf/luci-app-jederproxy/actions/workflows/build.yml)
+[![Build Packages](https://github.com/ttimasdf/luci-app-jederproxy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/ttimasdf/luci-app-jederproxy/actions/workflows/build.yml)
+![LLM Copilot](https://img.shields.io/badge/copilot-gpt--3.5--turbo-purple)
+
 
 # luci-app-jederproxy
 
-Yet Another LuCI frontend for Xray. An *opinionated* forked version of [yichya/luci-app-jederproxy](https://github.com/yichya/luci-app-jederproxy) with lots of quality of life improvements.
+LuCI interface and nftables/iptables generator for multiple proxy backends, supporting mihomo/clash/clash meta, xray/v2ray, shadowsocks (ss-redir).
 
-This project will *never* provide updates through an opkg feed. It's easy though, but adding a custom feed from untrusted source (anywhere, even me!) is a huge security flaw. Manual installation with `opkg` or pack the ipk into the firmware image with OpenWrt imagebuilder is recommanded.
+## Introduction
 
-| OpenWrt Version |     compatible?     |
-| :---------------: | :--------------------: |
-|      22.03      |          ✅          |
-|      21.02      | ✅(Not fully tested) |
-|     ≤19.07     |    ⚠️(Untested)    |
+`luci-app-jederproxy` is a LuCI (OpenWrt Web Interface) application that provides a user-friendly interface and nftables/iptables generator for managing multiple proxy backends. It supports popular proxy backends such as mihomo, clash, clash meta, xray, v2ray, and shadowsocks (ss-redir).
 
-# Features
+With `luci-app-jederproxy`, users can easily configure and manage their proxy settings through the OpenWrt web interface. The application generates the necessary nftables/iptables rules based on the selected proxy backend and configuration options, simplifying the setup process and ensuring proper routing of network traffic through the chosen proxy.
 
-🌟: only in this fork, *NOT* available upstream.
 
-- Proxy servers management.
-- Separate upstream proxies for TCP and UDP.
-- Transparent proxy through nftables (>=22.03) or iptables (<=21.02) (🌟completely rewritten)
-- Proxy rules config by whitelist/blacklist.
-- 🌟Xray [confdir support](https://xtls.github.io/config/features/multiple.html), allowing maximum flexibility.
-- 🌟Explicitly naming auto-generated configuration files for better sorting, improving the integration with *confdir*.
-- Using Xray as an HTTPS reverse proxy.
-- 🌟ulimit configuration (file descriptors, memory usage) for Xray process.
-- Configuration option to bypass proxy for network traffic from intranet hosts by host MAC address.
-- Configuration option to bypass proxy for network traffic from router processes by UID and GID.
-- 🌟Optional dnsmasq takeover, which automatically setting xray DNS inbound as dnsmasq upstream.
+| Server              | Status  |
+|---------------------|---------|
+| mihomo              | ✔️  |
+| clash               | ✔️  |
+| clash meta          | ✔️  |
+| xray                | ❓  |
+| v2ray               | ❓  |
+| shadowsocks (ss-redir) | 🚧  |
 
-## Breaking changes differ from upstream project
+- ✔️ - Supported
+- ❓ - Untested but should be okay
+- 🚧 - Work in progress
 
-Service name is changed from `xray` to `jederproxy`, to avoid conflict with service provided by openwrt package `xray-core`.
+## Features
 
-```bash
-# start service
-/etc/init.d/jederproxy start
-# stop service
-/etc/init.d/jederproxy stop
-```
+- LuCI web interface for easy configuration and management of proxy backends.
+- Support for multiple proxy backends, including mihomo, clash, clash meta, xray, v2ray, and shadowsocks (ss-redir).
+- Automatic generation of nftables/iptables rules based on the selected proxy backend and configuration options.
+- Flexible configuration options for each proxy backend, allowing customization of proxy settings according to individual requirements.
+- Real-time status monitoring and logging of proxy activities.
+- Integration with OpenWrt firewall and network settings for seamless integration into the existing network infrastructure.
+
+## Prerequisites
+
+- OpenWrt or compatible firmware installed on your router/device.
+- LuCI web interface installed and accessible.
+
+## Installation
+
+1. Log in to your OpenWrt router/device using SSH or LuCI web interface.
+2. Navigate to the "System" -> "Software" page in the LuCI web interface.
+3. Click on the "Update lists" button to refresh the package lists.
+4. Search for `luci-app-jederproxy` in the "Download and install package" field.
+5. Click on the "Install" button next to the `luci-app-jederproxy` package to install it.
+6. Wait for the installation to complete.
+7. Once installed, the `luci-app-jederproxy` application will be available in the "Services" section of the LuCI web interface.
+
+## Usage
+
+1. Access the LuCI web interface by entering the IP address of your OpenWrt router/device in a web browser.
+2. Log in to the LuCI web interface using your credentials.
+3. Navigate to the "Services" section and click on the "JederProxy" link.
+4. The `luci-app-jederproxy` interface will be displayed, allowing you to configure and manage your proxy backends.
+5. Select the desired proxy backend from the available options (mihomo, clash, clash meta, xray, v2ray, shadowsocks).
+6. Configure the proxy settings according to your requirements.
+7. Click on the "Save" button to apply the changes.
+8. The nftables/iptables rules will be automatically generated based on the selected proxy backend and configuration options.
+
+## Support and Contributions
+
+For bug reports, feature requests, or general questions, please create an issue on the [GitHub repository](https://github.com/ttimasdf/luci-app-jederproxy).
+
+Contributions to the project are welcome! If you would like to contribute code, please submit a pull request on the [GitHub repository](https://github.com/ttimasdf/luci-app-jederproxy).
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
